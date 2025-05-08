@@ -1,0 +1,7 @@
+[build]
+  command = "flutter build web"
+  publish = "apps/frontend/build/web"
+
+[context.production.environment]
+  SUPABASE_URL = "$SUPABASE_URL"
+  SUPABASE_KEY = "$SUPABASE_KEY"
