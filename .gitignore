@@ -43,3 +43,4 @@ apps/backend/.env
 *.old
 
 .env
+.vercel
