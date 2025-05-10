@@ -1,30 +1,42 @@
-// A form widget to accept a URL from the user.
+// Purpose: Form to input website URL and submit.
 import 'package:flutter/material.dart';
 
 class InputForm extends StatefulWidget {
   final void Function(String) onSubmit;
-  const InputForm({Key? key, required this.onSubmit}) : super(key: key);
+  const InputForm({super.key, required this.onSubmit});
 
   @override
-  _InputFormState createState() => _InputFormState();
+  State<InputForm> createState() => InputFormState();
 }
 
-class _InputFormState extends State<InputForm> {
+class InputFormState extends State<InputForm> {
   final _controller = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          TextField(controller: _controller, decoration: const InputDecoration(labelText: 'Website URL')),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () => widget.onSubmit(_controller.text),
-            child: const Text('Run Audit'),
-          ),
-        ],
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            TextFormField(
+              controller: _controller,
+              decoration: const InputDecoration(labelText: 'Website URL'),
+              validator: (val) => (val == null || val.isEmpty) ? 'Enter URL' : null,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  widget.onSubmit(_controller.text);
+                }
+              },
+              child: const Text('Run Audit'),
+            ),
+          ],
+        ),
       ),
     );
   }

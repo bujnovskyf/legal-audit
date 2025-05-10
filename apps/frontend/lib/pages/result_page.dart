@@ -1,4 +1,4 @@
-// Result page: displays audit results.
+// Purpose: Fetch and display audit results.
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/audit_provider.dart';
@@ -6,27 +6,31 @@ import '../widgets/audit_card.dart';
 
 class ResultPage extends StatefulWidget {
   final String url;
-  const ResultPage({Key? key, required this.url}) : super(key: key);
+  const ResultPage({super.key, required this.url});
 
   @override
-  _ResultPageState createState() => _ResultPageState();
+  State<ResultPage> createState() => ResultPageState();
 }
 
-class _ResultPageState extends State<ResultPage> {
+class ResultPageState extends State<ResultPage> {
   @override
   void initState() {
     super.initState();
-    Provider.of<AuditProvider>(context, listen: false).runAudit(widget.url);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AuditProvider>().runAudit(widget.url);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<AuditProvider>(context);
+    final provider = context.watch<AuditProvider>();
     return Scaffold(
-      appBar: AppBar(title: const Text('Audit Results')),
+      appBar: AppBar(title: const Text('Audit Result')),
       body: provider.loading
           ? const Center(child: CircularProgressIndicator())
-          : AuditCard(result: provider.result!),
+          : provider.error != null
+              ? Center(child: Text(provider.error!))
+              : AuditCard(result: provider.result!),
     );
   }
 }
