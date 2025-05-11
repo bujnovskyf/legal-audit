@@ -1,11 +1,11 @@
-// Defines the root widget and app-level configuration.
+// Purpose: Root widget and provider setup.
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'providers/audit_provider.dart';
 import 'pages/home_page.dart';
-import 'package:provider/provider.dart';
 
 class LegalAuditApp extends StatelessWidget {
-  const LegalAuditApp({Key? key}) : super(key: key);
+  const LegalAuditApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class LegalAuditApp extends StatelessWidget {
       create: (_) => AuditProvider(),
       child: MaterialApp(
         title: 'Legal Audit',
-        home: HomePage(),
+        home: const HomePage(),
       ),
     );
   }
