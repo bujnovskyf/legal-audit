@@ -1,7 +1,10 @@
 [build]
-  command = "flutter build web"
+  # run your custom build script
+  command = "sh netlify_build.sh"
   publish = "apps/frontend/build/web"
 
-[context.production.environment]
-  SUPABASE_URL = "$SUPABASE_URL"
-  SUPABASE_KEY = "$SUPABASE_KEY"
+# Single-page-app rewrite so every route falls back to index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
