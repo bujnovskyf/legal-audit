@@ -5,6 +5,14 @@ import { supabase } from '../utils/supabaseClient';
 import type { AuditReport } from '../types/types';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const allowedOrigin = process.env.FRONTEND_URL || '';
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
   try {
     const { id } = req.query as { id?: string };
     if (!id) {
@@ -31,7 +39,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       detectedTrackers: data.detected_trackers,
     };
 
-    return res.status(200).json({ id, url: data.url, createdAt: data.created_at, ...report });
+    return res.status(200).json({
+      id,
+      url: data.url,
+      createdAt: data.created_at,
+      ...report,
+    });
   } catch (err: any) {
     console.error('getReport handler error:', err);
     return res.status(500).json({ error: 'Internal Server Error' });

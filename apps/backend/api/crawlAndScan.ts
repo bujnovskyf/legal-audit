@@ -9,6 +9,14 @@ import { supabase } from '../utils/supabaseClient';
 import type { AuditReport } from '../types/types';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const allowedOrigin = process.env.FRONTEND_URL || '';
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
   try {
     const { url } = req.query as { url?: string };
     if (!url) {
