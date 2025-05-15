@@ -1,12 +1,12 @@
-// Shared TypeScript types for API and utils.
-
-export interface AuditReport {
-    complianceScore: number;
-    missingDocuments: string[];
-    detectedTrackers: string[];
+export interface TrackerInfo {
+    name: string;
+    consent?: string | boolean;
   }
   
-  export interface CrawlResult {
-    html: string;
+  /** The shape of an audit result */
+  export interface AuditReport {
+    complianceScore: number;
+    missingDocuments: string[];
+    detectedTrackers: TrackerInfo[];
   }
   
