@@ -1,5 +1,6 @@
 {
     "version": 2,
+    "installCommand": "npm install && npx playwright install chromium",
     "builds": [
       {
         "src": "apps/backend/api/*.ts",

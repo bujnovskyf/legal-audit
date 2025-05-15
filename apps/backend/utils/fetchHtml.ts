@@ -1,16 +1,36 @@
-// Purpose: Download the HTML content of a target website as a string.
+import axios, { AxiosError } from 'axios';
 
-import axios from 'axios';
-
-/**
- * Fetches the raw HTML from the given URL.
- * @param url The web address to download.
- * @returns A promise that resolves with the full HTML content.
- */
 export async function fetchHtml(url: string): Promise<string> {
-  // TODO: add URL validation, timeout settings, or retry logic as needed
-  const response = await axios.get<string>(url, {
-    headers: { 'User-Agent': 'LegalAuditBot/1.0' },
-  });
-  return response.data;
+  const headers = {
+    'User-Agent':
+      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) ' +
+      'AppleWebKit/537.36 (KHTML, like Gecko) ' +
+      'Chrome/114.0.0.0 Safari/537.36',
+    'Accept':
+      'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'cs-CZ,cs;q=0.9,en;q=0.8',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
+    'Referer': url,
+  };
+
+  try {
+    const response = await axios.get<string>(url, {
+      headers,
+      timeout: 10_000,
+      responseType: 'text',
+      maxRedirects: 5,
+      validateStatus: status => status >= 200 && status < 400,
+    });
+    return response.data;
+  } catch (err) {
+    if (axios.isAxiosError(err)) {
+      const e = err as AxiosError;
+      throw new Error(
+        `fetchHtml(${url}) failed: ${e.response?.status} ${e.response?.statusText}`
+      );
+    }
+    throw err;
+  }
 }
