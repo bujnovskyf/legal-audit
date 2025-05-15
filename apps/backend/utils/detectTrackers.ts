@@ -40,7 +40,12 @@ export async function detectTrackers(html: string, url: string): Promise<Tracker
     return acc;
   }, {});
 
-  const requests = await monitorRequests(url);
+  let requests: string[] = [];
+  try {
+    requests = await monitorRequests(url);
+  } catch (e) {
+    console.error('monitorRequests failed, skipping dynamic scan:', e);
+  }
 
   for (const reqUrl of requests) {
     let tracker: string | undefined;
