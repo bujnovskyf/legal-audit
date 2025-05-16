@@ -24,24 +24,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const html = await fetchHtml(url);
-
     const detectedTrackers = detectTrackers(html);
-
-    const foundDocs = detectDocuments(html);
+    const foundDocs = await detectDocuments(url);
 
     const requiredDocs = ['Privacy Policy', 'Cookie Policy', 'Terms of Use'];
-    const missingDocuments = requiredDocs.filter(doc => !foundDocs.includes(doc));
+    const foundDocTypes = foundDocs.map(doc => doc.type);
+    const missingDocuments = requiredDocs.filter(doc => !foundDocTypes.includes(doc));
 
     let complianceScore = 100;
-    complianceScore -= missingDocuments.length * 20; // -20% per missing doc
-    complianceScore -= detectedTrackers.length * 5;  // -5% per tracker found
-    complianceScore = Math.max(0, Math.min(100, complianceScore)); // clamp between 0–100
-
-    const report: AuditReport = {
-      complianceScore,
-      missingDocuments,
-      detectedTrackers,
-    };
+    complianceScore -= missingDocuments.length * 20;
+    complianceScore -= detectedTrackers.length * 5;
+    complianceScore = Math.max(0, Math.min(100, complianceScore));
 
     const { error: dbError } = await supabase
       .from('audits')
@@ -51,16 +44,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           compliance_score: complianceScore,
           missing_documents: missingDocuments,
           detected_trackers: detectedTrackers,
+          grok_output: JSON.stringify(foundDocs),
         },
       ]);
 
     if (dbError) {
       console.error('Supabase insert error:', dbError);
-      // Continue to return report even if saving fails
     }
 
-    // 7) Return the report as JSON
-    return res.status(200).json(report);
+    return res.status(200).json({
+      complianceScore,
+      missingDocuments,
+      detectedTrackers,
+      documentSummaries: foundDocs,
+    });
   } catch (error: any) {
     console.error('crawlAndScan error:', error);
     return res.status(500).json({ error: 'Internal Server Error' });

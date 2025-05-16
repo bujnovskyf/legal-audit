@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.4",
+    "@vercel/node": "^5.1.16",
+    "axios": "^1.9.0",
+    "form-data": "^4.0.2",
+    "jsdom": "^26.1.0"
+  }
+}
