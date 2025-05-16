@@ -9,7 +9,7 @@ class LegalAuditApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
+    return ChangeNotifierProvider<AuditProvider>(
       create: (_) => AuditProvider(),
       child: MaterialApp(
         title: 'Legal Audit',
