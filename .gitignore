@@ -33,7 +33,9 @@ apps/frontend/.metadata
 
 # ─── Node.js backend (apps/backend) ──────────────────────────────
 apps/backend/node_modules/
-apps/backend/.env
+apps/backend/.env.local
+apps/backend/.next
+apps/backend/next-env.d.ts
 
 # ─── Supabase (no compiled content, keep everything clean) ───────
 
@@ -44,3 +46,4 @@ apps/backend/.env
 
 .env
 .vercel
+node_modules
