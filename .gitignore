@@ -35,7 +35,6 @@ apps/frontend/.metadata
 apps/backend/node_modules/
 apps/backend/.env.local
 apps/backend/.next
-apps/backend/next-env.d.ts
 
 # ─── Supabase (no compiled content, keep everything clean) ───────
 
