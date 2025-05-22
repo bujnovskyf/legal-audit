@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/audit_provider.dart';
+import '../services/url_validator.dart';
 import 'result_page.dart';
+import '../widgets/footer.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,19 +17,23 @@ class _HomePageState extends State<HomePage> {
   final _formKey = GlobalKey<FormState>();
   bool _loading = false;
 
-  void _submit() async {
+  Future<void> _submit({bool force = false}) async {
+    String input = UrlValidator.normalize(_controller.text);
+    _controller.text = input;
+
     if (!_formKey.currentState!.validate()) return;
+
     setState(() => _loading = true);
     final provider = context.read<AuditProvider>();
 
-    await provider.startAudit(_controller.text.trim());
+    await provider.startAudit(_controller.text.trim(), force: force);
 
     setState(() => _loading = false);
 
     final auditId = provider.result?.auditId;
+
     if (!mounted) return;
     if (provider.error == null && auditId != null) {
-      _controller.clear();
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -43,6 +49,16 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<AuditProvider>();
+    // Pozor: Tohle nastaví hodnotu při každém buildnutí,
+    // ale jen pokud tam uživatel zrovna nepíše!
+    final lastUrl = provider.lastAuditedUrl;
+    if ((_controller.text.isEmpty || _controller.text != lastUrl) &&
+        (lastUrl != null && lastUrl.isNotEmpty)) {
+      // Pokud je pole prázdné nebo neodpovídá poslední URL, nastav hodnotu
+      _controller.text = lastUrl;
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('Legal Audit')),
       body: Center(
@@ -66,12 +82,7 @@ class _HomePageState extends State<HomePage> {
                     labelText: 'URL',
                     hintText: 'https://example.com',
                   ),
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) return 'Vyplňte URL';
-                    final uri = Uri.tryParse(val.trim());
-                    if (uri == null || !uri.hasScheme || !uri.hasAuthority) return 'Neplatné URL';
-                    return null;
-                  },
+                  validator: UrlValidator.validate,
                   keyboardType: TextInputType.url,
                   onFieldSubmitted: (_) => _submit(),
                 ),
@@ -79,7 +90,7 @@ class _HomePageState extends State<HomePage> {
                 _loading
                     ? const CircularProgressIndicator()
                     : ElevatedButton(
-                        onPressed: _submit,
+                        onPressed: () => _submit(),
                         child: const Text('Spustit audit'),
                       ),
               ],
@@ -87,6 +98,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
+      bottomNavigationBar: const AppFooter(),
     );
   }
 }
