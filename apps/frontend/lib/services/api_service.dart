@@ -8,12 +8,15 @@ class ApiService {
     defaultValue: 'http://localhost:3000/api/audit',
   );
 
-  static Future<AuditResult> startAudit(String url) async {
+  static Future<Map<String, dynamic>> startAudit(String url, {bool force = false}) async {
     final uri = Uri.parse('$_apiBase/start');
+    final body = <String, dynamic>{'url': url};
+    if (force) body['force'] = true;
+
     final response = await http.post(
       uri,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'url': url}),
+      body: jsonEncode(body),
     );
 
     if (response.statusCode != 200) {
@@ -22,14 +25,7 @@ class ApiService {
 
     try {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
-      return AuditResult(
-        auditId: data['auditId'] as String?,
-        docUrls: (data['docUrls'] as Map?)?.cast<String, dynamic>(),
-        grokOutputs: null,
-        complianceScore: 0.0,
-        missingDocuments: const [],
-        detectedTrackers: const [],
-      );
+      return data;
     } catch (e) {
       throw Exception('Invalid response format: $e');
     }

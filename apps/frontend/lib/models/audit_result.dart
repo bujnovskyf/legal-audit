@@ -1,6 +1,6 @@
 class AuditResult {
   final String? auditId;
-  final String? url;
+  final String? originalUrl;
   final double complianceScore;
   final List<String> missingDocuments;
   final List<String> detectedTrackers;
@@ -9,7 +9,7 @@ class AuditResult {
 
   AuditResult({
     this.auditId,
-    this.url,
+    this.originalUrl,
     required this.complianceScore,
     required this.missingDocuments,
     required this.detectedTrackers,
@@ -19,9 +19,10 @@ class AuditResult {
 
   factory AuditResult.fromJson(Map<String, dynamic> json) {
     final audit = json['audit'] ?? {};
+    final url = audit['url'] ?? json['url'];
     return AuditResult(
-      auditId: audit['id'] as String?,
-      url: audit['url'] as String?,
+      auditId: audit['id'] as String? ?? json['auditId'] as String?,
+      originalUrl: url as String?,
       complianceScore: (audit['compliance_score'] as num?)?.toDouble() ?? 0.0,
       missingDocuments: List<String>.from(audit['missing_documents'] ?? []),
       detectedTrackers: List<String>.from(audit['detected_trackers'] ?? []),

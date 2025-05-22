@@ -9,14 +9,60 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return;
   }
 
-  const { url } = req.body;
+  const { url, force } = req.body;
   if (!url) {
     res.status(400).json({ error: 'Missing URL' });
     return;
   }
 
   try {
-    // Vytvoření audit záznamu
+    if (!force) {
+      const { data: recentAudits, error: searchError } = await supabase
+        .from('audits')
+        .select('id, created_at')
+        .eq('url', url)
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (searchError) throw new Error(searchError.message);
+
+      if (
+        recentAudits &&
+        recentAudits.length > 0 &&
+        Date.now() - new Date(recentAudits[0].created_at).getTime() < 60 * 60 * 1000
+      ) {
+        const auditId = recentAudits[0].id;
+
+        const { data: auditRow, error: auditErr } = await supabase
+          .from('audits')
+          .select('*')
+          .eq('id', auditId)
+          .single();
+
+        const { data: docUrls } = await supabase
+          .from('audit_document_urls')
+          .select('*')
+          .eq('audit_id', auditId)
+          .single();
+
+        const { data: grokOutput } = await supabase
+          .from('audit_grok_outputs')
+          .select('*')
+          .eq('audit_id', auditId)
+          .single();
+
+        res.status(200).json({
+          auditId,
+          url, 
+          docUrls,
+          fromCache: true,
+          audit: auditRow,
+          grok: grokOutput || {},
+        });
+        return;
+      }
+    }
+
     const { data: audit, error: auditError } = await supabase
       .from('audits')
       .insert([{ url }])
@@ -28,8 +74,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       return;
     }
 
-    // Detekce dokumentů (bez analýzy, jen URL)
-    const docs = await detectDocuments(url, { analyze: false }); // uprav detectDocuments pokud je potřeba
+    const docs = await detectDocuments(url, { analyze: false });
 
     const docUrls: any = {
       audit_id: audit.id,
@@ -45,7 +90,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
 
     await supabase.from('audit_document_urls').insert([docUrls]);
 
-    res.status(200).json({ auditId: audit.id, docUrls });
+    res.status(200).json({
+      auditId: audit.id,
+      url,
+      docUrls,
+      fromCache: false,
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message || 'Internal server error' });
   }
