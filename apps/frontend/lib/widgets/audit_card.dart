@@ -1,6 +1,6 @@
-// Purpose: Display compliance score, missing docs, and trackers.
 import 'package:flutter/material.dart';
 import '../models/audit_result.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AuditCard extends StatelessWidget {
   final AuditResult result;
@@ -8,6 +8,7 @@ class AuditCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       margin: const EdgeInsets.all(16),
       child: Padding(
@@ -15,12 +16,12 @@ class AuditCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Compliance: ${result.complianceScore}%'),
+            Text('${l10n.compliance}: ${result.complianceScore}%'),
             const SizedBox(height: 12),
-            const Text('Missing Documents:'),
+            Text('${l10n.missingDocuments}:'),
             for (var d in result.missingDocuments) Text('- $d'),
             const SizedBox(height: 12),
-            const Text('Trackers Detected:'),
+            Text('${l10n.detectedTrackers}:'),
             for (var t in result.detectedTrackers) Text('- $t'),
           ],
         ),

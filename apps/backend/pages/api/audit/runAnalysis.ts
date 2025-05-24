@@ -10,21 +10,22 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     return;
   }
 
-  const { auditId } = req.body;
+  const { auditId, language } = req.body;
+  const lang = typeof language === 'string' ? language : 'en';
+  console.log('LANG RECEIVED:', lang);  
+
   if (!auditId) {
     res.status(400).json({ error: 'Missing auditId' });
     return;
   }
 
   try {
-    // 1) Zkontroluj, jestli už nějaká AI analýza pro ten auditId existuje
     const { data: existing, error: existingError } = await supabase
       .from('audit_grok_outputs')
       .select('*')
       .eq('audit_id', auditId)
       .single();
 
-    // Pokud existuje a aspoň jeden výstup není null/'' (tedy už bylo analyzováno)
     if (
       existing &&
       (
@@ -37,7 +38,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       return;
     }
 
-    // 2) Získáme URL dokumentů
     const { data: docUrls, error } = await supabase
       .from('audit_document_urls')
       .select('*')
@@ -48,19 +48,18 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       return;
     }
 
-    // Pokud dokument chybí, vůbec neposílej request na Groka
     let privacyOutput: string | null = null;
     let cookieOutput: string | null = null;
     let termsOutput: string | null = null;
 
     if (docUrls.privacy_policy_url) {
-      privacyOutput = await analyzeDocument(docUrls.privacy_policy_url);
+      privacyOutput = await analyzeDocument(docUrls.privacy_policy_url, lang);
     }
     if (docUrls.cookie_policy_url) {
-      cookieOutput = await analyzeDocument(docUrls.cookie_policy_url);
+      cookieOutput = await analyzeDocument(docUrls.cookie_policy_url, lang);
     }
     if (docUrls.terms_of_use_url) {
-      termsOutput = await analyzeDocument(docUrls.terms_of_use_url);
+      termsOutput = await analyzeDocument(docUrls.terms_of_use_url, lang);
     }
 
     await supabase
@@ -74,7 +73,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         },
       ], { onConflict: 'audit_id' });
 
-    // Pro návratovou hodnotu:
     const results = {
       privacy_policy_url: privacyOutput,
       cookie_policy_url: cookieOutput,
@@ -87,5 +85,4 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 }
 
-// Exportuj přes withCors (kvůli CORS preflight)
 export default withCors(handler);

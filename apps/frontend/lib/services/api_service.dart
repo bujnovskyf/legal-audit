@@ -98,12 +98,15 @@ class ApiService {
     }
   }
 
-  static Future<void> runAIAnalysis(String auditId) async {
+  static Future<void> runAIAnalysis(String auditId, {required String language}) async {
     final uri = Uri.parse('$_apiBase/runAnalysis');
     final response = await http.post(
       uri,
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'auditId': auditId}),
+      body: jsonEncode({
+        'auditId': auditId,
+        'language': language,
+      }),
     );
     if (response.statusCode != 200) {
       throw Exception('Failed to run AI analysis: ${response.statusCode}');

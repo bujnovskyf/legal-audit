@@ -53,7 +53,6 @@ export async function detectDocuments(
           const absoluteUrl = new URL(href, targetUrl).href;
           documentUrls.add(absoluteUrl);
         } catch (e) {
-          // ignore invalid URLs
         }
       }
     }

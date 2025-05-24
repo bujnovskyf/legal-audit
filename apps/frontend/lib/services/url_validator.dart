@@ -1,6 +1,6 @@
 class UrlValidator {
   static String? validate(String? val) {
-    if (val == null || val.trim().isEmpty) return 'Vyplňte URL';
+    if (val == null || val.trim().isEmpty) return 'urlEmpty';
     String input = val.trim();
     if (!input.startsWith('http://') && !input.startsWith('https://')) {
       input = 'https://$input';
@@ -10,7 +10,7 @@ class UrlValidator {
         !(uri.isScheme('http') || uri.isScheme('https')) ||
         uri.host.isEmpty ||
         !uri.host.contains('.')) {
-      return 'Zadejte platnou adresu webové stránky (např. https://example.com)';
+      return 'urlInvalid';
     }
     return null;
   }
@@ -23,3 +23,4 @@ class UrlValidator {
     return input;
   }
 }
+

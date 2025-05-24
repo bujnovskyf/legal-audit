@@ -19,14 +19,13 @@ const HTML_PATTERNS: StaticPattern[] = [
   { name: 'X (Twitter) Pixel', regex: /analytics\.twitter\.com\/i\/adsct/i },
 ];
 
-// Přidáváme MS Clarity k pixel trackerům
 const PIXEL_TRACKERS = [
   'Facebook Pixel',
   'Hotjar',
   'TikTok Pixel',
   'LinkedIn Insight Tag',
   'X (Twitter) Pixel',
-  'Microsoft Clarity', // <-- Nově zde
+  'Microsoft Clarity',
 ];
 
 function extractParam(reqUrl: string, paramName: string): string | null {
@@ -48,7 +47,6 @@ export async function detectTrackers(html: string, url: string): Promise<Tracker
     }
   }
 
-  // Přidej i MS Clarity do eventSeen
   const eventSeen = PIXEL_TRACKERS.reduce<Record<string, boolean>>((acc, name) => {
     acc[name] = false;
     return acc;
@@ -88,7 +86,7 @@ export async function detectTrackers(html: string, url: string): Promise<Tracker
       else if (asc === 'D') consentValue = false;
     } else if (/clarity\.ms\//.test(reqUrl)) {
       tracker = 'Microsoft Clarity';
-      eventSeen['Microsoft Clarity'] = true; // <-- Tady signalizuje "aktivní"
+      eventSeen['Microsoft Clarity'] = true;
     } else if (/static\.hotjar\.com\/c\/hotjar-/.test(reqUrl)) {
       tracker = 'Hotjar';
       eventSeen['Hotjar'] = true;
@@ -137,7 +135,6 @@ export async function detectTrackers(html: string, url: string): Promise<Tracker
     }
   }
 
-  // Nastavení eventů pro pixel trackery (včetně MS Clarity)
   for (const name of PIXEL_TRACKERS) {
     if (found.has(name)) {
       found.get(name)!.consent = eventSeen[name];

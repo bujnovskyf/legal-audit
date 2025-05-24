@@ -16,14 +16,17 @@ export PATH="$PATH:$(pwd)/flutter/bin"
 flutter precache --web
 
 # === Step 2: Build the Flutter web app ===
-echo "🚀 Building Flutter web (release)…"
+echo "🚀 Building Flutter web (WASM release)…"
 cd apps/frontend
 
 # fetch pub dependencies
 flutter pub get --no-precompile
 
-# build with your API_BASE_URL from Netlify env
-flutter build web --release \
+# generate localization files
+flutter gen-l10n
+
+# build with your API_BASE_URL from Netlify env, using WASM
+flutter build web --wasm \
   --dart-define=API_BASE_URL=$API_BASE_URL
 
 echo "Flutter web build complete at apps/frontend/build/web"

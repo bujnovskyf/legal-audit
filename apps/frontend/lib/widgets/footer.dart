@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'about_dialog_content.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class AppFooter extends StatelessWidget {
   const AppFooter({super.key});
@@ -13,14 +14,15 @@ class AppFooter extends StatelessWidget {
   }
 
   void _showAboutDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('O projektu'),
+        title: Text(l10n.aboutProject),
         content: const AboutDialogContent(),
         actions: [
           TextButton(
-            child: const Text('Zavřít'),
+            child: Text(l10n.close),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ],
@@ -30,6 +32,7 @@ class AppFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final textStyle = Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 16);
 
     return Padding(
@@ -37,13 +40,12 @@ class AppFooter extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // About jako první řádek
           Align(
             alignment: Alignment.center,
             child: InkWell(
               onTap: () => _showAboutDialog(context),
               child: Text(
-                'About',
+                l10n.about,
                 style: textStyle?.copyWith(
                   color: Colors.blue,
                   decoration: TextDecoration.underline,
@@ -52,12 +54,10 @@ class AppFooter extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          // Built by
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('🔧 ', style: TextStyle(fontSize: 16)),
-              Text('Built by ', style: textStyle),
+              Text('${l10n.builtBy} ', style: textStyle),
               InkWell(
                 onTap: () => _launchUrl('https://labs.narrativva.com/'),
                 child: Text(
@@ -72,14 +72,12 @@ class AppFooter extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          // GitHub
           InkWell(
             onTap: () => _launchUrl('https://github.com/bujnovskyf/legal-audit'),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('⭐ ', style: TextStyle(fontSize: 16)),
-                Text('Star us on ', style: textStyle),
+                Text('${l10n.starOn} ', style: textStyle),
                 Text(
                   'GitHub',
                   style: textStyle?.copyWith(
@@ -92,7 +90,6 @@ class AppFooter extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          // Copyright
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
