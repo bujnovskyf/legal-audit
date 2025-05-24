@@ -37,7 +37,6 @@ class _HomePageState extends State<HomePage> {
     final auditId = provider.result?.auditId;
 
     if (!mounted) return;
-    // Používáme errorKey, ne error!
     if (provider.errorKey == null && auditId != null) {
       Navigator.push(
         context,
@@ -98,6 +97,16 @@ class _HomePageState extends State<HomePage> {
       _controller.text = lastUrl;
     }
 
+    final double screenWidth = MediaQuery.of(context).size.width;
+    // Větší paddingy na desktopu, menší na mobilu
+    final double horizontalPadding = screenWidth < 600 ? 16 : 40;
+
+    // Maximální šířka karty (na desktopu se nikdy neroztáhne do 100%)
+    final double maxCardWidth = 480;
+
+    // Adaptivní velikost headline (větší na desktopu)
+    final double headlineFontSize = screenWidth < 600 ? 28 : 36;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.appTitle),
@@ -109,43 +118,179 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Form(
-            key: _formKey,
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: 48, horizontal: horizontalPadding),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  l10n.enterUrl,
-                  style: Theme.of(context).textTheme.titleLarge,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                TextFormField(
-                  controller: _controller,
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    labelText: l10n.urlLabel,
-                    hintText: l10n.urlHint,
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: maxCardWidth,
                   ),
-                  validator: (value) => _localizedUrlValidator(value, l10n),
-                  keyboardType: TextInputType.url,
-                  onFieldSubmitted: (_) => _submit(),
-                ),
-                const SizedBox(height: 16),
-                _loading
-                    ? const CircularProgressIndicator()
-                    : ElevatedButton(
-                        onPressed: () => _submit(),
-                        child: Text(l10n.startAudit),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(32),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha((0.08 * 255).round()),
+                          blurRadius: 28,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFFe5fbea), // světle zelená
+                          Color(0xFFf8fafd), // téměř bílá
+                        ],
                       ),
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        vertical: screenWidth < 600 ? 36 : 48,
+                        horizontal: screenWidth < 600 ? 18 : 36,
+                      ),
+                      child: Column(
+                        children: [
+                          Text(
+                            l10n.homeHeadline,
+                            style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: headlineFontSize,
+                                  color: const Color(0xFF18181B),
+                                ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            l10n.homeSubtitle,
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: Colors.grey[700],
+                                  fontWeight: FontWeight.w400,
+                                ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 36),
+                          Form(
+                            key: _formKey,
+                            child: Column(
+                              children: [
+                                TextFormField(
+                                  controller: _controller,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.urlLabel,
+                                    hintText: l10n.urlHint,
+                                    prefixIcon: const Icon(Icons.link, color: Color(0xFF22C55E)),
+                                  ),
+                                  validator: (value) => _localizedUrlValidator(value, l10n),
+                                  keyboardType: TextInputType.url,
+                                  onFieldSubmitted: (_) => _submit(),
+                                ),
+                                const SizedBox(height: 28),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: _loading
+                                      ? const Center(child: CircularProgressIndicator())
+                                      : _GradientButton(
+                                          onPressed: () => _submit(),
+                                          text: l10n.startAudit,
+                                          icon: Icons.search,
+                                        ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 48),
+                // (volitelně další sekce nebo "Jak to funguje")
               ],
             ),
           ),
         ),
       ),
       bottomNavigationBar: const AppFooter(),
+    );
+  }
+}
+
+// Vlastní gradientové tlačítko – stejně responzivní
+class _GradientButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  final String text;
+  final IconData? icon;
+
+  const _GradientButton({
+    required this.onPressed,
+    required this.text,
+    this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double buttonFontSize = screenWidth < 600 ? 16 : 18;
+
+    return Material(
+      borderRadius: BorderRadius.circular(24),
+      elevation: 6,
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(24),
+        child: Ink(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(24),
+            gradient: const LinearGradient(
+              colors: [
+                Color(0xFF22C55E),
+                Color(0xFF06b6d4), // modrozelená (cyan-400)
+              ],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Color(0x5522C55E),
+                blurRadius: 14,
+                offset: Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Container(
+            height: 56,
+            alignment: Alignment.center,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (icon != null)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 12.0),
+                    child: Icon(
+                      icon,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                Text(
+                  text,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: buttonFontSize,
+                        letterSpacing: -0.5,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

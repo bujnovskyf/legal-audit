@@ -49,7 +49,7 @@
   "runAudit": "Spustit audit",
   "errorEnterUrl": "Vyplňte URL",
   "errorInvalidUrl": "Zadejte platnou adresu webové stránky (např. https://example.com)",
-  "aboutText": "Legal Audit je experimentální nástroj pro rychlý právní audit webových stránek.\n\nCo to dělá?\n• Najde a analyzuje důležité právní dokumenty (zásady ochrany osobních údajů, zásady cookies, obchodní podmínky) na zadané adrese.\n• Zhodnotí jejich dostupnost, strukturu a některé klíčové náležitosti.\n• Detekuje vybrané trackery a měřící nástroje.\n• Zobrazí, jaký výchozí souhlas (například s cookies) je na stránkách nastaven a co se ukládá ještě před interakcí uživatele.\n• Pomocí AI modelu (Grok) poskytuje i kvalitativní analýzu obsahu dokumentů.\n\nJak to používat?\n1. Zadejte adresu webu, který chcete analyzovat.\n2. Spusťte audit a počkejte, než nástroj vyhledá dokumenty, analyzuje výchozí souhlas a detekuje trackery.\n3. Zkontrolujte a případně upravte nalezené dokumenty.\n4. Spusťte AI analýzu pro detailnější posouzení obsahu dokumentů.\n5. Projděte si výsledky a podívejte se na chybějící nebo nevyhovující části a detaily AI analýzy.\n\nPoužité technologie: Flutter, Supabase, Vercel, Grok 3.\n\nTento nástroj vznikl v rámci projektu Narrativva Labs.\n\nV případě jakýchkoliv dotazů nebo problémů nás kontaktujte na ",
+  "aboutText": "Legal Audit je experimentální nástroj pro rychlý právní audit webových stránek.\n\nCo dělá?\n• Najde a analyzuje klíčové právní dokumenty (zásady ochrany osobních údajů, cookie policy, podmínky užití) na dané adrese.\n• Vyhodnotí jejich dostupnost, strukturu a některé základní požadavky.\n• Detekuje vybrané trackery a analytické nástroje, včetně Google Analytics 4, Google Ads Remarketing, Facebook Pixel, Sklik Remarketing, Microsoft Ads Remarketing, Microsoft Clarity, Hotjar, TikTok Pixel, LinkedIn Insight Tag a X (Twitter) Pixel.\n• Ukáže výchozí souhlas (např. cookies) nastavený na webu a co se ukládá před interakcí uživatele.\n• Používá AI model (Grok) k poskytnutí kvalitativní analýzy obsahu dokumentů.\n\nJak používat?\n1. Zadejte adresu webu, který chcete analyzovat.\n2. Spusťte audit a počkejte, až nástroj najde dokumenty, zanalyzuje souhlas a detekuje trackery.\n3. Zkontrolujte a případně upravte nalezené dokumenty.\n4. Spusťte AI analýzu pro detailnější posouzení.\n5. Prohlédněte si výsledky a zjistěte chybějící nebo nevyhovující části a detaily AI analýzy.\n\nTechnologie: Flutter, Supabase, Vercel, Grok 3.\n\nTento nástroj byl vytvořen v rámci projektu Narrativva Labs.\n\nMáte-li dotazy nebo připomínky, kontaktujte nás na ",
   "changeLanguage": "Změnit jazyk",
   "errorUpdateUrl": "Nepodařilo se uložit změnu. Zkuste to prosím znovu.",
   "errorAuditIdNull": "Audit ID je prázdné – nelze pokračovat.",
@@ -57,5 +57,15 @@
   "urlInvalid": "Zadejte platnou adresu webové stránky (např. https://example.com)",
   "aiNotRunInLastAudit": "V posledním auditu nebyla provedena AI analýza.",
   "copy": "Kopírovat",
-  "copiedToClipboard": "Zkopírováno do schránky!"
+  "copiedToClipboard": "Zkopírováno do schránky!",
+  "homeHeadline": "Automatizovaný právní audit a kontrola trackerů",
+  "homeSubtitle": "Zkontrolujte zásady, cookies, podmínky i to, jaké trackery měří data uživatelů – a zda správně respektují souhlas.",
+  "aiAnalysis": "AI Analýza",
+  "statusCompliant": "V souladu",
+  "statusAttention": "Vyžaduje pozornost",
+  "statusNonCompliant": "Není v souladu",
+  "websiteUrlHint": "Vložte adresu webu (např. https://vasedomena.cz)",
+  "inputFormTitle": "Analyzujte svůj web z pohledu práva a soukromí",
+  "analyzing": "Analyzujeme...",
+  "disclaimerText": "Tento nástroj slouží pouze pro informační účely. Nejsme právníci a neposkytujeme právní poradenství. Používání tohoto nástroje nezakládá žádný právní vztah mezi klientem a advokátem."
 }

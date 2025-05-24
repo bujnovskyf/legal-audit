@@ -14,35 +14,103 @@ class LanguageSwitcher extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final Color primaryColor = Theme.of(context).colorScheme.primary;
 
-    return PopupMenuButton<Locale>(
-      icon: const Icon(Icons.language),
-      tooltip: l10n.changeLanguage, // lokalizované
-      onSelected: (locale) => onLocaleChange(locale),
-      itemBuilder: (context) => [
-        PopupMenuItem(
-          value: const Locale('cs'),
-          child: Row(
-            children: [
-              if (currentLocale.languageCode == 'cs')
-                const Icon(Icons.check, size: 18),
-              const SizedBox(width: 4),
-              Text(l10n.languageCzech),
-            ],
-          ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: PopupMenuButton<Locale>(
+        icon: Icon(Icons.language, color: primaryColor, size: 27),
+        tooltip: l10n.changeLanguage,
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
         ),
-        PopupMenuItem(
-          value: const Locale('en'),
-          child: Row(
-            children: [
-              if (currentLocale.languageCode == 'en')
-                const Icon(Icons.check, size: 18),
-              const SizedBox(width: 4),
-              Text(l10n.languageEnglish),
-            ],
+        color: Colors.white,
+        itemBuilder: (context) => [
+          _LangMenuItem(
+            locale: const Locale('cs'),
+            currentLocale: currentLocale,
+            text: l10n.languageCzech,
+            primaryColor: primaryColor,
+            onSelect: onLocaleChange,
           ),
+          _LangMenuItem(
+            locale: const Locale('en'),
+            currentLocale: currentLocale,
+            text: l10n.languageEnglish,
+            primaryColor: primaryColor,
+            onSelect: onLocaleChange,
+          ),
+        ],
+        onSelected: (locale) => onLocaleChange(locale),
+      ),
+    );
+  }
+}
+
+class _LangMenuItem extends PopupMenuEntry<Locale> {
+  final Locale locale;
+  final Locale currentLocale;
+  final String text;
+  final Color primaryColor;
+  final void Function(Locale) onSelect;
+
+  const _LangMenuItem({
+    required this.locale,
+    required this.currentLocale,
+    required this.text,
+    required this.primaryColor,
+    required this.onSelect,
+  });
+
+  @override
+  double get height => 44;
+
+  @override
+  bool represents(Locale? value) => value == locale;
+
+  @override
+  State<_LangMenuItem> createState() => _LangMenuItemState();
+}
+
+class _LangMenuItemState extends State<_LangMenuItem> {
+  @override
+  Widget build(BuildContext context) {
+    final bool isSelected = widget.locale.languageCode == widget.currentLocale.languageCode;
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: () {
+        Navigator.pop(context, widget.locale);
+        widget.onSelect(widget.locale);
+      },
+      child: Container(
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        decoration: isSelected
+            ? BoxDecoration(
+                color: widget.primaryColor.withAlpha((0.08 * 255).round()),
+                borderRadius: BorderRadius.circular(12),
+              )
+            : null,
+        child: Row(
+          children: [
+            if (isSelected)
+              Icon(Icons.check_circle_rounded, color: widget.primaryColor, size: 20)
+            else
+              const SizedBox(width: 20),
+            const SizedBox(width: 10),
+            Text(
+              widget.text,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: isSelected ? widget.primaryColor : Colors.black,
+                    fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                    fontSize: 16,
+                  ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

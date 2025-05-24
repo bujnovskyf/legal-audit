@@ -49,7 +49,7 @@
   "runAudit": "Run Audit",
   "errorEnterUrl": "Enter the URL",
   "errorInvalidUrl": "Please enter a valid website address (e.g. https://example.com)",
-  "aboutText": "Legal Audit is an experimental tool for rapid legal auditing of websites.\n\nWhat does it do?\n• Finds and analyzes key legal documents (privacy policy, cookie policy, terms of use) at the given address.\n• Evaluates their availability, structure, and some key requirements.\n• Detects selected trackers and analytics tools.\n• Shows the default consent (e.g., cookies) set on the site and what is stored before user interaction.\n• Uses an AI model (Grok) to provide qualitative analysis of document content.\n\nHow to use?\n1. Enter the website address you want to analyze.\n2. Run the audit and wait for the tool to find documents, analyze consent, and detect trackers.\n3. Check and, if needed, edit the found documents.\n4. Run the AI analysis for a more detailed assessment.\n5. Review the results and see missing or unsatisfactory parts and AI analysis details.\n\nTech stack: Flutter, Supabase, Vercel, Grok 3.\n\nThis tool was created as part of the Narrativva Labs project.\n\nFor any questions or issues, contact us at ",
+  "aboutText": "Legal Audit is an experimental tool for rapid legal auditing of websites.\n\nWhat does it do?\n• Finds and analyzes key legal documents (privacy policy, cookie policy, terms of use) at the given address.\n• Evaluates their availability, structure, and some key requirements.\n• Detects selected trackers and analytics tools, including Google Analytics 4, Google Ads Remarketing, Facebook Pixel, Sklik Remarketing, Microsoft Ads Remarketing, Microsoft Clarity, Hotjar, TikTok Pixel, LinkedIn Insight Tag, and X (Twitter) Pixel.\n• Shows the default consent (e.g., cookies) set on the site and what is stored before user interaction.\n• Uses an AI model (Grok) to provide qualitative analysis of document content.\n\nHow to use?\n1. Enter the website address you want to analyze.\n2. Run the audit and wait for the tool to find documents, analyze consent, and detect trackers.\n3. Check and, if needed, edit the found documents.\n4. Run the AI analysis for a more detailed assessment.\n5. Review the results and see missing or unsatisfactory parts and AI analysis details.\n\nTech stack: Flutter, Supabase, Vercel, Grok 3.\n\nThis tool was created as part of the Narrativva Labs project.\n\nFor any questions or issues, contact us at ",
   "changeLanguage": "Change language",
   "errorUpdateUrl": "Failed to save the change. Please try again.",
   "errorAuditIdNull": "Audit ID is null – cannot proceed.",
@@ -57,5 +57,15 @@
   "urlInvalid": "Enter a valid website address (e.g., https://example.com)",
   "aiNotRunInLastAudit": "AI analysis was not performed in the last audit.",
   "copy": "Copy",
-  "copiedToClipboard": "Copied to clipboard!"
+  "copiedToClipboard": "Copied to clipboard!",
+  "homeHeadline": "Automated legal audit & tracker analysis",
+  "homeSubtitle": "Check your privacy policy, cookies, terms, and discover which trackers are measuring user data—with or without consent.",
+  "aiAnalysis": "AI Analysis",
+  "statusCompliant": "Compliant",
+  "statusAttention": "Needs Attention",
+  "statusNonCompliant": "Non-compliant",
+  "websiteUrlHint": "Paste your website URL (e.g. https://example.com)",
+  "inputFormTitle": "Analyze your website for legal & privacy risks",
+  "analyzing": "Analyzing...",
+  "disclaimerText": "This tool is provided for informational purposes only. We are not legal professionals and do not provide legal advice. Use of this tool does not establish any attorney-client relationship."
 }
