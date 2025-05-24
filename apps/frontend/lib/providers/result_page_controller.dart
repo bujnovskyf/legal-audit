@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'audit_provider.dart';
-import '../pages/result_page.dart'; // importuj správnou cestu!
+import '../pages/result_page.dart';
 
 class ResultPageController extends ChangeNotifier {
   String auditId;
   final BuildContext context;
   final void Function(Locale) onLocaleChange;
 
-  // UI State
   bool isLoading = false;
   bool aiLoading = false;
   bool aiResultsVisible = false;
@@ -17,12 +16,13 @@ class ResultPageController extends ChangeNotifier {
   bool submittingAgain = false;
   bool auditFromCache = false;
 
-  // Controllers
   final Map<String, TextEditingController> controllers = {
     'privacy_policy_url': TextEditingController(),
     'cookie_policy_url': TextEditingController(),
     'terms_of_use_url': TextEditingController(),
   };
+
+  bool _disposed = false;
 
   ResultPageController({
     required this.context,
@@ -36,14 +36,17 @@ class ResultPageController extends ChangeNotifier {
 
   Future<void> _init() async {
     isLoading = true;
-    notifyListeners();
+    _safeNotifyListeners();
     await loadResult();
+    if (_disposed) return;
     isLoading = false;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   Future<bool> loadResult() async {
     await _provider.refreshResult(auditId);
+
+    if (_disposed) return false;
 
     auditFromCache = _provider.fromCache == true;
     final urls = _provider.result?.docUrls ?? {};
@@ -54,84 +57,95 @@ class ResultPageController extends ChangeNotifier {
 
     aiResultsVisible = grok != null && grok.isNotEmpty;
 
-    notifyListeners();
+    _safeNotifyListeners();
     return aiResultsVisible;
   }
 
   Future<void> updateUrlField(String key) async {
+    final l10n = AppLocalizations.of(context)!;
     final newUrls = controllers.map((k, ctrl) => MapEntry(k, ctrl.text.trim()));
     try {
       await _provider.updateDocumentUrls(newUrls, silent: true);
     } catch (e, s) {
       debugPrint('Update URL field error: $e\n$s');
-      final l10n = AppLocalizations.of(context)!;
+      if (_disposed) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(l10n.errorUpdateUrl)),
       );
     }
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   Future<void> runAnalysis() async {
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context);
+
     aiLoading = true;
     aiError = null;
     aiResultsVisible = false;
-    notifyListeners();
-
-    final locale = Localizations.localeOf(context);
+    _safeNotifyListeners();
 
     try {
       await _provider.runAIAnalysis(language: locale.languageCode);
       final hasAiOutputs = await loadResult();
+      if (_disposed) return;
+
       aiLoading = false;
       aiResultsVisible = hasAiOutputs;
       if (_provider.errorKey == 'error.aiAlreadyRun') {
-        final l10n = AppLocalizations.of(context)!;
         aiError = l10n.errorAiAlreadyRun;
       }
     } catch (e) {
+      if (_disposed) return;
       aiLoading = false;
       aiError = e.toString();
       aiResultsVisible = false;
     }
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   Future<void> runAgain() async {
+    final l10n = AppLocalizations.of(context)!;
+
     submittingAgain = true;
     aiResultsVisible = false;
     aiError = null;
     auditFromCache = false;
-    notifyListeners();
+    _safeNotifyListeners();
 
     final url = _provider.result?.originalUrl ?? _provider.lastAuditedUrl ?? '';
     if (url.isEmpty) {
+      if (_disposed) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.errorNoUrl)),
+        SnackBar(content: Text(l10n.errorNoUrl)),
       );
       submittingAgain = false;
-      notifyListeners();
+      _safeNotifyListeners();
       return;
     }
+
     await _provider.startAudit(url, force: true);
     final newAuditId = _provider.result?.auditId;
+    if (_disposed) return;
+
     submittingAgain = false;
 
     if (newAuditId != null && newAuditId != auditId) {
+      if (_disposed) return;
       // Naviguj na nový result page
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (_) => ResultPage(
             auditId: newAuditId,
-            onLocaleChange: onLocaleChange, // <-- správně předej callback!
+            onLocaleChange: onLocaleChange,
           ),
         ),
       );
       return;
     }
     await loadResult();
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   String mapErrorKeyToMessage(AppLocalizations l10n, String? errorKey) {
@@ -151,8 +165,15 @@ class ResultPageController extends ChangeNotifier {
     }
   }
 
+  void _safeNotifyListeners() {
+    if (!_disposed) {
+      notifyListeners();
+    }
+  }
+
   @override
   void dispose() {
+    _disposed = true;
     for (final c in controllers.values) {
       c.dispose();
     }
