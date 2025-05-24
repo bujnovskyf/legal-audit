@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "postinstall": "npx playwright install chromium"
+    "postinstall": "apt-get update && apt-get install -y libnss3 libnspr4 libgbm1 && npx playwright install chromium"
   },
   "keywords": [],
   "author": "",
