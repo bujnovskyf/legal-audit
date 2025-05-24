@@ -6,32 +6,39 @@ class AuditProvider extends ChangeNotifier {
   String? _auditId;
   AuditResult? _result;
   bool _loading = false;
-  String? _error;
+  String? _errorKey;
   bool? _fromCache;
-  String? _lastAuditedUrl; // <--- UX feature
+  String? _lastAuditedUrl;
+  String _aiLanguage = 'cs';
 
-  // --- Getters
   AuditResult? get result => _result;
   String? get auditId => _auditId;
   bool get loading => _loading;
-  String? get error => _error;
+  String? get errorKey => _errorKey;
   bool? get fromCache => _fromCache;
   String? get lastAuditedUrl => _lastAuditedUrl;
+  String get aiLanguage => _aiLanguage;
 
   Map<String, dynamic> get documentUrls => _result?.docUrls ?? {};
   String? get originalUrl => _result?.originalUrl;
 
-  // --- Start audit, also set lastAuditedUrl
+  void setAiLanguage(String langCode) {
+    if (_aiLanguage != langCode) {
+      _aiLanguage = langCode;
+      notifyListeners();
+    }
+  }
+
   Future<void> startAudit(String url, {bool force = false}) async {
     _setLoading(true);
-    _setError(null);
-    _result = null;
-    _auditId = null;
-    _fromCache = null;
-    _lastAuditedUrl = url; // <- Save last audited URL
+    _setErrorKey(null);
+
+    final prevAuditId = _auditId;
+    _lastAuditedUrl = url; // uložíme URL pro případ opakování auditu
 
     try {
       final response = await ApiService.startAudit(url, force: force);
+
       _fromCache = response['fromCache'] ?? false;
       final auditId = response['auditId'];
 
@@ -41,11 +48,19 @@ class AuditProvider extends ChangeNotifier {
 
       _result = await ApiService.getAuditResult(auditId ?? '');
       _auditId = auditId;
+
+      // Pokud je nový auditId odlišný od předchozího, vyčistíme AI výstupy
+      if (auditId != prevAuditId) {
+        _result = _result?.copyWith(grokOutputs: null);
+      }
+
+      notifyListeners();
     } catch (e) {
       _fromCache = null;
-      _setError(_humanizeError(e));
+      _setErrorKey(_errorKeyFromException(e));
       _result = null;
       _auditId = null;
+      _lastAuditedUrl = null;
     } finally {
       _setLoading(false);
     }
@@ -53,7 +68,7 @@ class AuditProvider extends ChangeNotifier {
 
   Future<void> updateDocumentUrls(Map<String, dynamic> updatedUrls, {bool silent = false}) async {
     if (_auditId == null) {
-      _setError('Audit ID is null, cannot update document URLs.');
+      _setErrorKey('error.auditIdNull');
       return;
     }
     if (!silent) _setLoading(true);
@@ -67,35 +82,69 @@ class AuditProvider extends ChangeNotifier {
       );
       await ApiService.scanAudit(_auditId!);
       _result = await ApiService.getAuditResult(_auditId!);
-      _setError(null);
-      notifyListeners(); // Překreslí jen, když se změní data
+      _setErrorKey(null);
+      notifyListeners();
     } catch (e) {
-      _setError(_humanizeError(e));
+      _setErrorKey(_errorKeyFromException(e));
     } finally {
       if (!silent) _setLoading(false);
     }
   }
 
-  Future<void> runAIAnalysis() async {
+  Future<void> runAIAnalysis({required String language}) async {
     if (_auditId == null) {
-      _setError('Audit ID is null, cannot run AI analysis.');
+      _setErrorKey('error.auditIdNull');
       return;
     }
     _setLoading(true);
-    _setError(null);
+    _setErrorKey(null);
 
     try {
-      await ApiService.runAIAnalysis(_auditId!);
+      await ApiService.runAIAnalysis(_auditId!, language: language);
+      // Čekáme, než backend dokončí AI analýzu
       await Future.delayed(const Duration(seconds: 3));
       _result = await ApiService.getAuditResult(_auditId!);
+      notifyListeners();
     } catch (e) {
       if (e.toString().contains('429')) {
-        _setError('AI analýza už byla provedena. (chyba 429)');
+        _setErrorKey('error.aiAlreadyRun');
       } else {
-        _setError(_humanizeError(e));
+        _setErrorKey(_errorKeyFromException(e));
       }
     } finally {
       _setLoading(false);
+    }
+  }
+
+  Future<void> refreshResult(String auditId) async {
+    _setLoading(true);
+    try {
+      _result = await ApiService.getAuditResult(auditId);
+      _setErrorKey(null);
+    } catch (e) {
+      _setErrorKey(_errorKeyFromException(e));
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  void clearLastAuditedUrl() {
+    _lastAuditedUrl = null;
+    notifyListeners();
+  }
+
+  void clearAiOutput() {
+    if (_result != null) {
+      _result = AuditResult(
+        auditId: _result!.auditId,
+        docUrls: _result!.docUrls,
+        grokOutputs: {}, // vyčistíme AI výstupy
+        complianceScore: _result!.complianceScore,
+        missingDocuments: _result!.missingDocuments,
+        detectedTrackers: _result!.detectedTrackers,
+        originalUrl: _result!.originalUrl,
+      );
+      notifyListeners();
     }
   }
 
@@ -104,44 +153,17 @@ class AuditProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _setError(String? value) {
-    _error = value;
+  void _setErrorKey(String? value) {
+    _errorKey = value;
     notifyListeners();
   }
 
-  Future<void> refreshResult(String auditId) async {
-    _setLoading(true);
-    try {
-      _result = await ApiService.getAuditResult(auditId);
-      _setError(null);
-    } catch (e) {
-      _setError(_humanizeError(e));
-    } finally {
-      _setLoading(false);
-    }
-  }
-
-  String _humanizeError(Object e) {
+  String _errorKeyFromException(Object e) {
     final errorString = e.toString();
-    if (errorString.contains('500')) {
-      return 'Server nedokázal stránku zpracovat. Zkontrolujte, že zadáváte platnou a existující webovou adresu. (chyba 500)';
-    }
-    if (errorString.contains('404')) {
-      return 'Stránka nebyla nalezena. (chyba 404)';
-    }
-    if (errorString.contains('429')) {
-      return 'Příliš mnoho požadavků. Zkuste to prosím později. (chyba 429)';
-    }
-    if (errorString.contains('Failed host lookup') ||
-        errorString.contains('SocketException')) {
-      return 'Zadaná adresa není dostupná. Zkontrolujte připojení nebo platnost adresy. (detail: $errorString)';
-    }
-    return 'Nastala chyba při zpracování. ($errorString)';
-  }
-
-  // Helper for homepage: clean last audited url if needed
-  void clearLastAuditedUrl() {
-    _lastAuditedUrl = null;
-    notifyListeners();
+    if (errorString.contains('500')) return 'error.500';
+    if (errorString.contains('404')) return 'error.404';
+    if (errorString.contains('429')) return 'error.429';
+    if (errorString.contains('Failed host lookup') || errorString.contains('SocketException')) return 'error.network';
+    return 'error.generic';
   }
 }

@@ -1,5 +1,5 @@
-// Purpose: Form to input website URL and submit.
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class InputForm extends StatefulWidget {
   final void Function(String) onSubmit;
@@ -15,6 +15,7 @@ class InputFormState extends State<InputForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Form(
@@ -23,8 +24,8 @@ class InputFormState extends State<InputForm> {
           children: [
             TextFormField(
               controller: _controller,
-              decoration: const InputDecoration(labelText: 'Website URL'),
-              validator: (val) => (val == null || val.isEmpty) ? 'Enter URL' : null,
+              decoration: InputDecoration(labelText: l10n.websiteUrl),
+              validator: (val) => (val == null || val.isEmpty) ? l10n.errorEnterUrl : null,
             ),
             const SizedBox(height: 20),
             ElevatedButton(
@@ -33,7 +34,7 @@ class InputFormState extends State<InputForm> {
                   widget.onSubmit(_controller.text);
                 }
               },
-              child: const Text('Run Audit'),
+              child: Text(l10n.runAudit),
             ),
           ],
         ),

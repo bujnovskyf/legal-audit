@@ -15,7 +15,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   try {
-    // Audit detail
     const { data: audit, error: auditError } = await supabase
       .from('audits')
       .select('id, url, compliance_score, missing_documents, detected_trackers, created_at')
@@ -26,7 +25,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       return;
     }
 
-    // Grok outputs (map keys for frontend)
     let grok = null;
     try {
       const grokRes = await supabase
@@ -47,7 +45,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       grok = null;
     }
 
-    // Doc URLs
     const { data: docUrls, error: docUrlsError } = await supabase
       .from('audit_document_urls')
       .select('*')

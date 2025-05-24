@@ -30,4 +30,24 @@ class AuditResult {
       grokOutputs: json['grok'] != null ? Map<String, dynamic>.from(json['grok']) : null,
     );
   }
+
+  AuditResult copyWith({
+    String? auditId,
+    String? originalUrl,
+    double? complianceScore,
+    List<String>? missingDocuments,
+    List<String>? detectedTrackers,
+    Map<String, dynamic>? docUrls,
+    Map<String, dynamic>? grokOutputs,
+  }) {
+    return AuditResult(
+      auditId: auditId ?? this.auditId,
+      originalUrl: originalUrl ?? this.originalUrl,
+      complianceScore: complianceScore ?? this.complianceScore,
+      missingDocuments: missingDocuments ?? this.missingDocuments,
+      detectedTrackers: detectedTrackers ?? this.detectedTrackers,
+      docUrls: docUrls ?? this.docUrls,
+      grokOutputs: grokOutputs ?? this.grokOutputs,
+    );
+  }
 }
